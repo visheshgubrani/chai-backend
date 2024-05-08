@@ -87,6 +87,23 @@ const updateComment = asyncHandler(async (req, res) => {
 
 const deleteComment = asyncHandler(async (req, res) => {
     // TODO: delete a comment
+    const {commentId} = req.params
+    const user = req.user?._id
+    const comment = await Comment.findById(commentId)
+    if (!comment) {
+        throw new ApiError(400, "Failed to fetch the comment")
+    }
+
+    if (user.toString() !== comment.owner.toString()) {
+        throw new ApiError(400, 'User not authorised to delete the comment')
+    }
+
+    await Comment.findByIdAndDelete(commentId)
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Comment deleted successfully")
+    )
+
 })
 
 export {
